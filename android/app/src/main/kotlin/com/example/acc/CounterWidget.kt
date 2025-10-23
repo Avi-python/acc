@@ -5,11 +5,11 @@ import HomeWidgetGlanceStateDefinition
 import androidx.core.content.edit
 import android.content.Context
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.glance.Button
 import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
+import androidx.glance.GlanceTheme
 import androidx.glance.action.ActionParameters
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.action.ActionCallback
@@ -17,14 +17,15 @@ import androidx.glance.appwidget.action.actionRunCallback
 import androidx.glance.appwidget.provideContent
 import androidx.glance.background
 import androidx.glance.layout.*
+import androidx.glance.text.*
 import androidx.glance.state.GlanceStateDefinition
 import androidx.glance.text.Text
 import androidx.glance.currentState
 import android.os.Handler
 import android.os.Looper
+import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import es.antonborri.home_widget.HomeWidgetBackgroundIntent
-import es.antonborri.home_widget.HomeWidgetPlugin
 
 class CounterWidget: GlanceAppWidget() {
 
@@ -40,18 +41,23 @@ class CounterWidget: GlanceAppWidget() {
     @Composable
     private fun GlanceContent(context: Context, currentState: HomeWidgetGlanceState) {
         val counter = currentState.preferences.getInt("counter", 0)
-        Box(modifier = GlanceModifier.background(Color.White).fillMaxSize()) {
+        Box(modifier = GlanceModifier.background(GlanceTheme.colors.widgetBackground).fillMaxSize()) {
             Column (
                 modifier = GlanceModifier
                     .fillMaxWidth()
                     .fillMaxHeight()
-                    .padding(8.dp)
-                    .padding(top = 16.dp),
+                    .padding(8.dp),
                 verticalAlignment = Alignment.Vertical.CenterVertically,
                 horizontalAlignment = Alignment.Horizontal.CenterHorizontally
             ){
                 Text(
-                    text = counter.toString()
+                    text = counter.toString(),
+                    modifier = GlanceModifier.padding(6.dp),
+                    style = TextStyle(
+                        color = GlanceTheme.colors.primary,
+                        fontSize = 40.sp,
+                        fontWeight = FontWeight.Bold
+                    )
                 )
                 Row (
                     modifier = GlanceModifier
@@ -68,7 +74,7 @@ class CounterWidget: GlanceAppWidget() {
                             .padding(8.dp),
                     ){
                         Button(
-                            text = "4",
+                            text = "-1",
                             onClick = actionRunCallback<SubOneActionCallBack>(),
                             modifier = GlanceModifier
                                 .fillMaxWidth()
@@ -83,7 +89,7 @@ class CounterWidget: GlanceAppWidget() {
                             .padding(8.dp),
                     ){
                         Button(
-                            text = "3",
+                            text = "100",
                             onClick = actionRunCallback<AddHundActionCallBack>(),
                             modifier = GlanceModifier
                                 .fillMaxWidth()
@@ -98,7 +104,7 @@ class CounterWidget: GlanceAppWidget() {
                             .padding(8.dp),
                     ){
                         Button(
-                            text = "2",
+                            text = "10",
                             onClick = actionRunCallback<AddTenActionCallBack>(),
                             modifier = GlanceModifier
                                 .fillMaxWidth()
