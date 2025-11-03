@@ -4,8 +4,36 @@ import '../providers/transaction_provider.dart';
 import '../models/transaction.dart';
 import 'add_transaction_page.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
+
+  late final _transactionProvider = context.read<TransactionProvider>();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) async {
+    if (state == AppLifecycleState.resumed) {
+      await _transactionProvider.refreshBox();
+      await _transactionProvider.loadTransactions();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

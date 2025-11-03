@@ -1,3 +1,4 @@
+import "dart:async";
 import 'package:flutter/foundation.dart';
 import '../../models/transaction.dart';
 import '../../repositories/transaction_repo.dart';
@@ -30,12 +31,10 @@ class TransactionProvider extends ChangeNotifier {
   // Methods
   Future<void> loadTransactions() async {
     _isLoading = true;
-    _error = null;
-    notifyListeners();
 
     try {
-      _transactions = await _repository.getAllTransactions();
-      _transactions.sort((a, b) => b.date.compareTo(a.date));
+      _transactions = await _repository.getTransactionsSortedByDate();
+      _error = null;
     } catch (e) {
       _error = e.toString();
     } finally {
@@ -72,5 +71,19 @@ class TransactionProvider extends ChangeNotifier {
       _error = e.toString();
       notifyListeners();
     }
+  }
+
+  Future<void> refreshBox() async {
+    try {
+      await _repository.refreshBox();
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+    }
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 }

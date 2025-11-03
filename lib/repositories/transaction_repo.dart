@@ -104,6 +104,11 @@ class TransactionRepository {
     return transactions;
   }
 
+  Future<void> refreshBox() async {
+    if(_box!.isOpen) await _box?.close();
+    _box = await Hive.openBox<Transaction>(_boxName);
+  }
+
   // Close box when done
   Future<void> close() async {
     await _box!.close();
