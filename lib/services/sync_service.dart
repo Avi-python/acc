@@ -36,14 +36,9 @@ class SyncService {
       );
     }
 
-    // TODO : A checking logic to check conflicts between local and notion(remote)
-
     try {
       // 1. Get all local transactions that need syncing
       final localTransactions = await _localRepo.getAllTransactions();
-      final unsyncedTransactions = localTransactions
-          .where((t) => !t.isSynced || t.isDeleted)
-          .toList();
 
       int uploaded = 0;
       int updated = 0;
@@ -51,14 +46,14 @@ class SyncService {
       List<String> errors = [];
 
       // 2. Sync each transaction
-      for (final transaction in unsyncedTransactions) {
+      for (final transaction in localTransactions) {
         try {
           if (transaction.isDeleted && transaction.notionId != null) {
-            // Delete from Notion
+            // Delete from Notion and local
             await _notionService.deleteNotionEntry(transaction.notionId!);
             await _localRepo.deleteTransaction(transaction.id);
             deleted++;
-          } else if (transaction.notionId == null) {
+          } else if (!transaction.isSynced && !transaction.isDeleted) {
             // New transaction - upload to Notion
             final notionId = await _notionService.createNotionEntry(transaction);
             transaction.notionId = notionId;
@@ -66,7 +61,7 @@ class SyncService {
             transaction.lastSyncedAt = DateTime.now();
             await _localRepo.updateTransaction(transaction);
             uploaded++;
-          } else {
+          } else if(transaction.isSynced && transaction.lastUpdatedAt.isAfter(transaction.lastSyncedAt!)) {
             // Existing transaction - update in Notion
             await _notionService.updateNotionEntry(
               transaction.notionId!,
@@ -101,22 +96,6 @@ class SyncService {
         status: SyncStatus.error,
         message: 'Sync failed: $e',
       );
-    }
-  }
-
-  // Download transactions from Notion to local
-  Future<void> downloadFromNotion() async {
-    try {
-      final remoteData = await _notionService.fetchAllEntries();
-
-      for (final item in remoteData) {
-        // Parse Notion data and save locally
-        // TODO : (You'll need to implement parsing logic)
-        print('Downloaded: ${item['properties']['Title']}');
-      }
-    } catch (e) {
-      print('❌ Download failed: $e');
-      rethrow;
     }
   }
 

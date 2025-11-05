@@ -26,7 +26,16 @@ class TransactionRepository {
   // READ - Get single transaction
   Future<Transaction?> getTransaction(String id) async {
     await _ensureBoxIsOpen();
-    return _box!.get(id);
+    final transaction = _box!.get(id);
+    if(transaction == null || transaction.isDeleted) {
+      return null;
+    }
+    return transaction;
+  }
+
+  Future<List<Transaction>> getAllActiveTransactions() async {
+    await _ensureBoxIsOpen();
+    return _box!.values.where((t) => !t.isDeleted).toList();
   }
 
   // READ - Get all transactions
@@ -35,31 +44,20 @@ class TransactionRepository {
     return _box!.values.toList();
   }
 
-  // READ - Get transactions by type
-  Future<List<Transaction>> getTransactionsByType(TransactionType type) async {
-    await _ensureBoxIsOpen();
-    return _box!.values.where((t) => t.type == type).toList();
-  }
-
-  // READ - Get transactions by date range
-  Future<List<Transaction>> getTransactionsByDateRange(
-      DateTime start, DateTime end) async {
-    await _ensureBoxIsOpen();
-    return _box!.values.where((t) {
-      return t.createdAt.isAfter(start) && t.createdAt.isBefore(end);
-    }).toList();
-  }
-
-  // READ - Get transactions by category
-  Future<List<Transaction>> getTransactionsByCategory(String category) async {
-    await _ensureBoxIsOpen();
-    return _box!.values.where((t) => t.category == category).toList();
-  }
-
   // UPDATE - Update existing transaction
   Future<void> updateTransaction(Transaction transaction) async {
     await _ensureBoxIsOpen();
     await _box!.put(transaction.id, transaction);
+  }
+
+  // DELETE - Soft delete single transaction
+  Future<void> softDeleteTransaction(String id) async {
+    await _ensureBoxIsOpen();
+    final transaction = await getTransaction(id);
+    if(transaction != null) {
+      transaction.isDeleted = true;
+      await transaction.save();
+    }
   }
 
   // DELETE - Delete single transaction
@@ -68,16 +66,11 @@ class TransactionRepository {
     await _box!.delete(id);
   }
 
-  // DELETE - Delete all transactions
-  Future<void> deleteAllTransactions() async {
-    await _ensureBoxIsOpen();
-    await _box!.clear();
-  }
-
   // STATISTICS - Get total income
   Future<double> getTotalIncome() async {
     await _ensureBoxIsOpen();
-    return _box!.values
+    final transactions = await getAllActiveTransactions();
+    return transactions
         .where((t) => t.type == TransactionType.income)
         .fold<double>(0.0, (double sum, Transaction t) => sum + t.amount);
   }
@@ -85,7 +78,8 @@ class TransactionRepository {
   // STATISTICS - Get total expenses
   Future<double> getTotalExpenses() async {
     await _ensureBoxIsOpen();
-    return _box!.values
+    final transactions = await getAllActiveTransactions();
+    return transactions
         .where((t) => t.type == TransactionType.expense)
         .fold<double>(0.0, (double sum, Transaction t) => sum + t.amount);
   }
@@ -99,7 +93,7 @@ class TransactionRepository {
 
   // Get transactions sorted by date (newest first)
   Future<List<Transaction>> getTransactionsSortedByDate() async {
-    final transactions = await getAllTransactions();
+    final transactions = await getAllActiveTransactions();
     transactions.sort((a, b) => b.createdAt.compareTo(a.createdAt));
     return transactions;
   }

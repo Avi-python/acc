@@ -65,7 +65,7 @@ class TransactionProvider extends ChangeNotifier {
 
   Future<void> deleteTransaction(String id) async {
     try {
-      await _repository.deleteTransaction(id);
+      await _repository.softDeleteTransaction(id);
       await loadTransactions();
     } catch (e) {
       _error = e.toString();

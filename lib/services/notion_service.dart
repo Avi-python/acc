@@ -43,11 +43,8 @@ class NotionService {
         'Category': {
           'select': {'name': transaction.category}
         },
-        'CreatedAt': {
+        'DeviceCreatedAt': {
           'date': {'start': transaction.createdAt.toIso8601String()}
-        },
-        'LastUpdatedAt': {
-          'date': {'start': transaction.lastUpdatedAt.toIso8601String()}
         },
         'Notes': {
           'rich_text': [
@@ -98,12 +95,6 @@ class NotionService {
         },
         'Category': {
           'select': {'name': transaction.category}
-        },
-        'CreatedAt': {
-          'date': {'start': transaction.createdAt.toIso8601String()}
-        },
-        'LastUpdatedAt': {
-          'date': {'start': transaction.lastUpdatedAt.toIso8601String()}
         },
         'Notes': {
           'rich_text': [

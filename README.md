@@ -18,11 +18,12 @@ ACC is an offline-first personal finance companion crafted with Flutter, built o
 - **Services** coordinate external integrations such as the Notion workspace and connectivity checks.
 - **Platform hooks** enable the optional Android home widget to feed quick entries into the local ledger.
 
-## Data & Sync Overview 🔄
+## Data & Backup Overview 🔄
 - Transactions live in a local database so the app feels instant, even without connectivity.
 - When a Notion workspace is connected, uploads keep the remote view aligned with the latest local changes.
 - A lightweight status banner keeps you informed about sync progress, successes, or issues.
-- Future enhancements include bringing remote edits back down and resolving conflicts automatically.
+
+> ⚠️ Warning: Notion currently provides a view-only backup. Please do not edit transactions directly in Notion — two-way sync (remote edits back to the app) has not been implemented yet.
 
 ## Quick Start 🚀
 1. Install Flutter 3.24 or newer plus your preferred device tooling.
@@ -34,6 +35,7 @@ ACC is an offline-first personal finance companion crafted with Flutter, built o
 - Smarter conflict handling and bidirectional Notion sync.
 - Personalised categories, currencies, and localisation support.
 - Home widget support beyond Android and richer quick-entry actions.
+- remote(Notion) edits and resolving conflicts automatically.
 
 ---
 
