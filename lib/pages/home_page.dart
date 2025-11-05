@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../providers/sync_provider.dart';
 import '../providers/transaction_provider.dart';
 import '../models/transaction.dart';
+import '../services/sync_service.dart';
 import 'add_transaction_page.dart';
 
 class HomePage extends StatefulWidget {
@@ -41,39 +43,97 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       appBar: AppBar(
         title: const Text('Transactions'),
         elevation: 0,
+        actions: [
+          Consumer<SyncProvider>(
+            builder: (context, syncProvider, child) {
+              return IconButton(
+                icon: syncProvider.isSyncing
+                    ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+                    : const Icon(Icons.sync),
+                onPressed: syncProvider.isSyncing
+                    ? null
+                    : () => syncProvider.sync(),
+              );
+            },
+          ),
+        ]
       ),
-      body: Consumer<TransactionProvider>(
-        builder: (context, provider, child) {
-          if (provider.isLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
+      body: Column(
+        children: [
+          Consumer<SyncProvider>(
+            builder: (context, syncProvider, child) {
+              if (syncProvider.message == null) return const SizedBox();
 
-          if (provider.error != null) {
-            return Center(child: Text('Error: ${provider.error}'));
-          }
-
-          if (provider.transactions.isEmpty) {
-            return const Center(
-              child: Text('No transactions yet.\nTap + to add one!'),
-            );
-          }
-
-          return Column(
-            children: [
-              _buildSummaryCard(provider),
-              Expanded(
-                child: ListView.builder(
-                  itemCount: provider.transactions.length,
-                  itemBuilder: (context, index) {
-                    final transaction = provider.transactions[index];
-                    return _buildTransactionTile(
-                        context, transaction, provider);
-                  },
+              return Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                color: syncProvider.status == SyncStatus.success
+                    ? Colors.green
+                    : syncProvider.status == SyncStatus.error
+                    ? Colors.red
+                    : Colors.blue,
+                child: Row(
+                  children: [
+                    Icon(
+                      syncProvider.status == SyncStatus.success
+                          ? Icons.check_circle
+                          : syncProvider.status == SyncStatus.error
+                          ? Icons.error
+                          : Icons.sync,
+                      color: Colors.white,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        syncProvider.message!,
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ],
-          );
-        },
+              );
+            },
+          ),
+          Expanded(
+            child: Consumer<TransactionProvider>(
+              builder: (context, provider, child) {
+                if (provider.isLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                if (provider.error != null) {
+                  return Center(child: Text('Error: ${provider.error}'));
+                }
+
+                if (provider.transactions.isEmpty) {
+                  return const Center(
+                    child: Text('No transactions yet.\nTap + to add one!'),
+                  );
+                }
+
+                return Column(
+                  children: [
+                    _buildSummaryCard(provider),
+                    Expanded(
+                      child: ListView.builder(
+                        itemCount: provider.transactions.length,
+                        itemBuilder: (context, index) {
+                          final transaction = provider.transactions[index];
+                          return _buildTransactionTile(
+                              context, transaction, provider);
+                        },
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => Navigator.push(
@@ -135,7 +195,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       ),
       title: Text(transaction.name),
       subtitle: Text(
-        '${transaction.category} • ${_formatDate(transaction.date)}',
+        '${transaction.category} • ${_formatDate(transaction.createdAt)}',
       ),
       trailing: Text(
         '${isIncome ? '+' : '-'}\$${transaction.amount.toStringAsFixed(2)}',

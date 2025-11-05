@@ -5,6 +5,7 @@ import 'package:path_provider/path_provider.dart';
 import '../repositories/transaction_repo.dart';
 
 class HomeWidgetHandler {
+
   static void registerCallbacks() {
     HomeWidget.registerInteractivityCallback(counterCallback);
   }
@@ -14,11 +15,9 @@ class HomeWidgetHandler {
     Hive.init(dir.path);
 
     if (!Hive.isAdapterRegistered(0)) {
-      print('Registering Transaction Adapter');
       Hive.registerAdapter<Transaction>(TransactionAdapter());
     }
     if (!Hive.isAdapterRegistered(1)) {
-      print('Registering TransactionType Adapter');
       Hive.registerAdapter<TransactionType>(TransactionTypeAdapter());
     }
   }
@@ -29,13 +28,16 @@ class HomeWidgetHandler {
       final int counterValue =
           await HomeWidget.getWidgetData('counter', defaultValue: 0) as int;
 
+      final time = DateTime.now();
+
       final transaction = Transaction(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        id: time.millisecondsSinceEpoch.toString(),
         name: "Unknown",
         amount: counterValue.toDouble(),
         type: TransactionType.expense,
         category: "Unknown",
-        date: DateTime.now(),
+        createdAt: time,
+        lastUpdatedAt: time
       );
 
       await _initHive();

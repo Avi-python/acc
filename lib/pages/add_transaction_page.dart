@@ -150,7 +150,8 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
         amount: double.parse(_amountController.text),
         type: _type,
         category: _category,
-        date: _date,
+        createdAt: _date,
+        lastUpdatedAt: _date,
         notes: _notesController.text.isEmpty ? null : _notesController.text,
       );
 

@@ -20,10 +20,26 @@ class Transaction extends HiveObject {
   String category;
 
   @HiveField(5)
-  DateTime date;
+  DateTime createdAt;
 
   @HiveField(6)
+  DateTime lastUpdatedAt;
+
+  @HiveField(7)
   String? notes;
+
+  @HiveField(8)
+  String? notionId; // Notion page ID
+
+  @HiveField(9)
+  bool isSynced; // Is it synced to Notion?
+
+  @HiveField(10)
+  DateTime? lastSyncedAt; // When was it last synced?
+
+  @HiveField(11)
+  bool isDeleted; // Soft delete flag
+
 
   Transaction({
     required this.id,
@@ -31,8 +47,13 @@ class Transaction extends HiveObject {
     required this.amount,
     required this.type,
     required this.category,
-    required this.date,
+    required this.createdAt,
+    required this.lastUpdatedAt,
     this.notes,
+    this.notionId,
+    this.isSynced = false,
+    this.lastSyncedAt,
+    this.isDeleted = false,
   });
 
   // Helper method to convert to Map
@@ -43,7 +64,8 @@ class Transaction extends HiveObject {
       'amount': amount,
       'type': type.toString(),
       'category': category,
-      'date': date.toIso8601String(),
+      'createdAt': createdAt.toIso8601String(),
+      'lastUpdatedAt': lastUpdatedAt.toIso8601String(),
       'notes': notes,
     };
   }

@@ -46,7 +46,7 @@ class TransactionRepository {
       DateTime start, DateTime end) async {
     await _ensureBoxIsOpen();
     return _box!.values.where((t) {
-      return t.date.isAfter(start) && t.date.isBefore(end);
+      return t.createdAt.isAfter(start) && t.createdAt.isBefore(end);
     }).toList();
   }
 
@@ -100,7 +100,7 @@ class TransactionRepository {
   // Get transactions sorted by date (newest first)
   Future<List<Transaction>> getTransactionsSortedByDate() async {
     final transactions = await getAllTransactions();
-    transactions.sort((a, b) => b.date.compareTo(a.date));
+    transactions.sort((a, b) => b.createdAt.compareTo(a.createdAt));
     return transactions;
   }
 
