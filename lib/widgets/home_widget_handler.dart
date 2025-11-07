@@ -4,50 +4,46 @@ import 'package:home_widget/home_widget.dart';
 import 'package:path_provider/path_provider.dart';
 import '../repositories/transaction_repo.dart';
 
-class HomeWidgetHandler {
+void registerHomeWidgetCallbacks() {
+  HomeWidget.registerInteractivityCallback(counterCallback);
+}
 
-  static void registerCallbacks() {
-    HomeWidget.registerInteractivityCallback(counterCallback);
+Future<void> _initHiveInBackground() async {
+  final dir = await getApplicationDocumentsDirectory();
+  Hive.init(dir.path);
+
+  if (!Hive.isAdapterRegistered(0)) {
+    Hive.registerAdapter<Transaction>(TransactionAdapter());
   }
-
-  static Future<void> _initHive() async {
-    final dir = await getApplicationDocumentsDirectory();
-    Hive.init(dir.path);
-
-    if (!Hive.isAdapterRegistered(0)) {
-      Hive.registerAdapter<Transaction>(TransactionAdapter());
-    }
-    if (!Hive.isAdapterRegistered(1)) {
-      Hive.registerAdapter<TransactionType>(TransactionTypeAdapter());
-    }
+  if (!Hive.isAdapterRegistered(1)) {
+    Hive.registerAdapter<TransactionType>(TransactionTypeAdapter());
   }
+}
 
-  @pragma('vm:entry-point')
-  static Future<void> counterCallback(Uri? uri) async {
-    if (uri?.scheme == "counter" && uri?.host == "timeout") {
-      final int counterValue =
-          await HomeWidget.getWidgetData('counter', defaultValue: 0) as int;
+@pragma('vm:entry-point')
+Future<void> counterCallback(Uri? uri) async {
+  if (uri?.scheme == "counter" && uri?.host == "timeout") {
+    final int counterValue =
+        await HomeWidget.getWidgetData('counter', defaultValue: 0) as int;
 
-      final time = DateTime.now();
+    final time = DateTime.now();
 
-      final transaction = Transaction(
+    final transaction = Transaction(
         id: time.millisecondsSinceEpoch.toString(),
         name: "Unknown",
         amount: counterValue.toDouble(),
         type: TransactionType.expense,
         category: "Unknown",
         createdAt: time,
-        lastUpdatedAt: time
-      );
+        lastUpdatedAt: time);
 
-      await _initHive();
-      final repo = TransactionRepository();
-      await repo.init();
-      await repo.addTransaction(transaction);
-      await repo.close();
+    await _initHiveInBackground();
+    final repo = TransactionRepository();
+    await repo.init();
+    await repo.addTransaction(transaction);
+    await repo.close();
 
-      await HomeWidget.saveWidgetData<int>('counter', 0);
-      await HomeWidget.updateWidget(name: 'CounterWidgetReceiver');
-    }
+    await HomeWidget.saveWidgetData<int>('counter', 0);
+    await HomeWidget.updateWidget(name: 'CounterWidgetReceiver');
   }
 }

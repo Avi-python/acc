@@ -18,7 +18,7 @@ Future<void> main() async {
   Hive.init(dir.path);
   Hive.registerAdapter<Transaction>(TransactionAdapter());
   Hive.registerAdapter<TransactionType>(TransactionTypeAdapter());
-  HomeWidgetHandler.registerCallbacks();
+  registerHomeWidgetCallbacks();
   runApp(const MyApp());
 }
 
